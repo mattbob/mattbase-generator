@@ -9,7 +9,7 @@ var fs = require('fs'),
 // Constructor
 var Config = module.exports = function(locals, globals) {
 	// Default config file name
-	this.filename = '.yeopress';
+	this.filename = '.mattbase';
 
 	// Load files
 	this.global = this.load(path.join(process.env.HOME || process.env.USERPROFILE, this.filename)) || {};

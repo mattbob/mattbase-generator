@@ -308,8 +308,8 @@ Generator.prototype.commitTheme = function() {
 };
 
 Generator.prototype.saveSettings = function() {
-	this.logger.log('Writing .yeopress file');
-	fs.writeFileSync('.yeopress', JSON.stringify(this.conf.get(), null, '\t'));
+	this.logger.log('Writing .mattbase file');
+	fs.writeFileSync('.mattbase', JSON.stringify(this.conf.get(), null, '\t'));
 };
 
 Generator.prototype.finishedMessage = function() {

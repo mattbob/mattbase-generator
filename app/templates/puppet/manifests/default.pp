@@ -2,11 +2,11 @@
 Exec {
   path => ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/usr/local/sbin']
 }
-exec { 
+exec {
     'apt-get update':
         command => '/usr/bin/apt-get update';
 }
-package { 
+package {
 	'make':
 		ensure  => present,
 		require => Exec['apt-get update'];
@@ -25,7 +25,7 @@ class {
 	'apache::mod::php':
 		require => Exec['apt-get update'];
 }
-apache::vhost { 
+apache::vhost {
 	'localhost':
 		port    => '80',
 		docroot => '/home/vagrant/www',
@@ -45,7 +45,7 @@ class {
 	'mysql::php':
 		require => Exec['apt-get update'];
 	'mysql::server':
-		config_hash => { 'root_password' => 'yeopress' },
+		config_hash => { 'root_password' => '' },
 		require => Exec['apt-get update'];
 }
 mysql::db {
