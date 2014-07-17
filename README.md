@@ -8,6 +8,9 @@ A WordPress generator for Yeoman.
 - Install the generator: `npm install -g generator-mattbase`
 - Run: `yo mattbase`
 
+### For Mac Users
+- Make sure to run the above commands with `sudo`
+
 ### What it is?
 - Grabs the latest version of WordPress
 - Sets up git
