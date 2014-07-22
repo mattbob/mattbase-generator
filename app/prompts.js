@@ -131,16 +131,24 @@ module.exports = function(advanced, defaults) {
 		      value: 'ACFplugin',
 		      checked: true
 		    }, {
-		    name: 'Gravity Forms',
+		      name: 'Google Sitemap Generator',
+		      value: 'googleSitemapGenerator',
+		      checked: true
+		    }, {
+		      name: 'Gravity Forms',
 		      value: 'gravityForms',
+		      checked: true
+		    }, {
+		      name: 'Helpful Information',
+		      value: 'helpfulInformation',
 		      checked: true
 		    }, {
 		      name: 'Simple Page Ordering',
 		      value: 'simplePageOrdering',
 		      checked: true
 		    }, {
-		      name: 'Helpful Information',
-		      value: 'helpfulInformation',
+		      name: 'WordPress SEO',
+		      value: 'wordpressSEO',
 		      checked: true
 		    }]
 		}

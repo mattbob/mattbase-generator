@@ -114,7 +114,6 @@ Generator.prototype.createGitignore = function() {
 	}
 };
 
-// Git setup
 Generator.prototype.initialGitCommit = function() {
 	if (this.conf.get('git')) {
 		var done = this.async(),
@@ -166,6 +165,14 @@ Generator.prototype.configSetup = function() {
 Generator.prototype.createLocalConfig = function() {
 	this.logger.verbose('Copying wp-config');
 	this.template('local-config.php.tmpl', 'local-config.php');
+};
+
+Generator.prototype.setPermissions = function() {
+	if (fs.existsSync('.')) {
+		this.logger.log('Setting Permissions: 0755 on .');
+		wrench.chmodSyncRecursive('.', 0755);
+		this.logger.verbose('Done setting permissions on .');
+	}
 };
 
 Generator.prototype.commitWordPress = function() {
@@ -268,6 +275,28 @@ Generator.prototype.installMenuEditor = function() {
 		var done = this.async();
 		this.logger.log('Installing Admin Menu Editor plugin');
 		this.directory('admin-menu-editor', 'wp-content/plugins/admin-menu-editor');
+		done();
+	}
+}
+
+Generator.prototype.installWordPressSEO = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('wordpressSEO') > -1) {
+		var done = this.async();
+		this.logger.log('Installing WordPress SEO plugin');
+		this.directory('wordpress-seo', 'wp-content/plugins/wordpress-seo');
+		done();
+	}
+}
+
+Generator.prototype.installGoogleSitemapGenerator = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('googleSitemapGenerator') > -1) {
+		var done = this.async();
+		this.logger.log('Installing Google Sitemap Generator plugin');
+		this.directory('google-sitemap-generator', 'wp-content/plugins/google-sitemap-generator');
 		done();
 	}
 }
