@@ -1,6 +1,5 @@
 Description:
-    Creates a new WordPress site. Many options are available to customize to your workflow.
-    Just follow the prompts and it will get you off the ground.  Happy WordPressing!
+    Creates a new WordPress site with custom theme and plugins.
 
 Example:
-    yo wordpress [--log-level=<LEVEL>] [--advanced] [--verbose]
+    yo mattbase [--log-level=<LEVEL>] [--advanced] [--verbose]
