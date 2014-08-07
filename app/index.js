@@ -11,6 +11,7 @@ var util         = require('util'),
 	Logger       = require('../util/log'),
 	Config       = require('../util/config');
 
+
 // Export the module
 module.exports = Generator;
 
@@ -56,7 +57,6 @@ function Generator(args, options, config) {
 util.inherits(Generator, yeoman.generators.Base);
 
 
-
 // Ask the user what they want done
 Generator.prototype.ohTellMeWhatYouWantWhatYouReallyReallyWant = function() {
 	// This is an async step
@@ -66,14 +66,7 @@ Generator.prototype.ohTellMeWhatYouWantWhatYouReallyReallyWant = function() {
 	// Display welcome message
 	this.logger.log(art.wp, {logPrefix: ''});
 
-	// Get the current version number of wordpress
-	this.logger.verbose('Getting current WP version');
-	wordpress.getCurrentVersion(function(err, ver) {
-		if (err) me.logger.warn('Error getting WP versions.  Falling back to ' + ver);
-		me.logger.verbose('Got current WP version: ' + ver);
-		me.conf.set('wpVer', ver);
-		getInput();
-	});
+	getInput();
 
 	// Get the input
 	function getInput() {
@@ -108,31 +101,13 @@ Generator.prototype.ohTellMeWhatYouWantWhatYouReallyReallyWant = function() {
 
 Generator.prototype.createGitignore = function() {
 	if (this.conf.get('git')) {
-		this.logger.verbose('Copying .gitignore file');
-		this.copy('gitignore.tmpl', '.gitignore');
-		this.logger.verbose('Done copying .gitignore file');
-	}
-};
-
-Generator.prototype.initialGitCommit = function() {
-	if (this.conf.get('git')) {
 		var done = this.async(),
 			me = this;
 
-		this.logger.log('Initializing Git');
-		git.init(function(err) {
-			if (err) me.logger.error(err);
-
-			me.logger.verbose('Git init complete');
-			git.add('.', function(err) {
-				if (err) me.logger.error(err);
-			}).commit('Initial Commit', function(err, d) {
-				if (err) me.logger.error(err);
-
-				me.logger.verbose('Git add and commit complete: ' + JSON.stringify(d, null, '  '));
-				done();
-			});
-		});
+		this.logger.log('Creating .gitignore file');
+		this.copy('gitignore.tmpl', '.gitignore');
+		this.logger.verbose('Done copying .gitignore file');
+		done();
 	}
 };
 
@@ -140,12 +115,8 @@ Generator.prototype.installWP = function() {
 	var done = this.async(),
 		me   = this;
 
-	this.logger.log('Installing WordPress ' + this.conf.get('wpVer'));
-	this.remote('wordpress', 'wordpress', this.conf.get('wpVer'), function(err, remote) {
-		remote.directory('.', '.');
-		me.logger.log('WordPress installed');
-		done();
-	});
+	this.logger.log('Installing WordPress');
+	this.tarball('https://github.com/wordpress/wordpress/archive/master.tar.gz', '.', done);
 };
 
 Generator.prototype.configSetup = function() {
@@ -156,14 +127,14 @@ Generator.prototype.configSetup = function() {
 	wordpress.getSaltKeys(function(saltKeys) {
 		me.logger.verbose('Salt keys: ' + JSON.stringify(saltKeys, null, '  '));
 		me.conf.set('saltKeys', saltKeys);
-		me.logger.verbose('Copying wp-config');
+		me.logger.log('Copying wp-config.php');
 		me.template('wp-config.php.tmpl', 'wp-config.php');
 		done();
 	});
 };
 
 Generator.prototype.createLocalConfig = function() {
-	this.logger.verbose('Copying wp-config');
+	this.logger.log('Copying local-config.php');
 	this.template('local-config.php.tmpl', 'local-config.php');
 };
 
@@ -175,25 +146,9 @@ Generator.prototype.setPermissions = function() {
 	}
 };
 
-Generator.prototype.commitWordPress = function() {
-	if (this.conf.get('git')) {
-		var done = this.async(),
-			me = this;
-
-		this.logger.verbose('Committing WP to Git');
-
-		git.add('.', function(err) {
-			if (err) me.logger.error(err);
-		}).commit('Installed wordpress', function(err, d) {
-			if (err) me.logger.error(err);
-			me.logger.verbose('Done committing: ' + JSON.stringify(d, null, '  '));
-			done();
-		});
-	}
-};
-
 Generator.prototype.removeDefaultThemes = function() {
-	var self = this;
+	var done = this.async(),
+		me   = this;
 
 	fs.readdir('wp-content/themes', function (err, files) {
 		if (typeof files !== 'undefined' && files.length !== 0) {
@@ -203,12 +158,13 @@ Generator.prototype.removeDefaultThemes = function() {
 
 		    	if (isDirectory) {
 		    		rimraf.sync(pathFile);
-		    		self.log.writeln('Removing ' + pathFile);
+		    		me.log.writeln('Removing ' + pathFile);
 		    	}
 		    });
 		}
+		done();
 	});
-}
+};
 
 Generator.prototype.installTheme = function() {
 	if (this.conf.get('installTheme')) {
@@ -229,44 +185,9 @@ Generator.prototype.installACFplugin = function() {
 	if(plugins.indexOf('ACFplugin') > -1) {
 		var done = this.async();
 		this.logger.log('Installing Advanced Custom Fields plugin');
-		wordpress.installACF(this, this.conf.get(), function() {
-			done();
-		});
+		this.tarball('https://github.com/elliotcondon/acf/archive/master.tar.gz', 'wp-content/plugins/acf', done);
 	}
-}
-
-Generator.prototype.installGFplugin = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('gravityForms') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Gravity Forms plugin');
-		this.directory('gravityforms', 'wp-content/plugins/gravityforms');
-		done();
-	}
-}
-
-Generator.prototype.installSPOplugin = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('simplePageOrdering') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Simple Page Ordering plugin');
-		this.directory('simple-page-ordering', 'wp-content/plugins/simple-page-ordering');
-		done();
-	}
-}
-
-Generator.prototype.installHelpfulInformation = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('helpfulInformation') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Helpful Information plugin');
-		this.directory('helpful-information', 'wp-content/plugins/helpful-information');
-		done();
-	}
-}
+};
 
 Generator.prototype.installMenuEditor = function() {
 	var plugins = this.conf.get('pluginsList');
@@ -274,21 +195,9 @@ Generator.prototype.installMenuEditor = function() {
 	if(plugins.indexOf('adminMenuEditor') > -1) {
 		var done = this.async();
 		this.logger.log('Installing Admin Menu Editor plugin');
-		this.directory('admin-menu-editor', 'wp-content/plugins/admin-menu-editor');
-		done();
+		this.tarball('https://github.com/wp-plugins/admin-menu-editor/archive/master.tar.gz', 'wp-content/plugins/admin-menu-editor', done);
 	}
-}
-
-Generator.prototype.installWordPressSEO = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('wordpressSEO') > -1) {
-		var done = this.async();
-		this.logger.log('Installing WordPress SEO plugin');
-		this.directory('wordpress-seo', 'wp-content/plugins/wordpress-seo');
-		done();
-	}
-}
+};
 
 Generator.prototype.installGoogleSitemapGenerator = function() {
 	var plugins = this.conf.get('pluginsList');
@@ -296,10 +205,49 @@ Generator.prototype.installGoogleSitemapGenerator = function() {
 	if(plugins.indexOf('googleSitemapGenerator') > -1) {
 		var done = this.async();
 		this.logger.log('Installing Google Sitemap Generator plugin');
-		this.directory('google-sitemap-generator', 'wp-content/plugins/google-sitemap-generator');
-		done();
+		this.tarball('https://github.com/wp-plugins/google-sitemap-generator/archive/master.tar.gz', 'wp-content/plugins/google-sitemap-generator', done);
 	}
-}
+};
+
+Generator.prototype.installGFplugin = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('gravityForms') > -1) {
+		var done = this.async();
+		this.logger.log('Installing Gravity Forms plugin');
+		this.tarball('https://github.com/gravityforms/gravityforms/archive/master.tar.gz', 'wp-content/plugins/gravityforms', done);
+	}
+};
+
+Generator.prototype.installHelpfulInformation = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('helpfulInformation') > -1) {
+		var done = this.async();
+		this.logger.log('Installing Helpful Information plugin');
+		this.tarball('https://github.com/wp-plugins/helpful-information/archive/master.tar.gz', 'wp-content/plugins/helpful-information', done);
+	}
+};
+
+Generator.prototype.installSPOplugin = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('simplePageOrdering') > -1) {
+		var done = this.async();
+		this.logger.log('Installing Simple Page Ordering plugin');
+		this.tarball('https://github.com/wp-plugins/simple-page-ordering/archive/master.tar.gz', 'wp-content/plugins/simple-page-ordering', done);
+	}
+};
+
+Generator.prototype.installWordPressSEO = function() {
+	var plugins = this.conf.get('pluginsList');
+
+	if(plugins.indexOf('wordpressSEO') > -1) {
+		var done = this.async();
+		this.logger.log('Installing WordPress SEO plugin');
+		this.tarball('https://github.com/Yoast/wordpress-seo/archive/master.tar.gz', 'wp-content/plugins/wordpress-seo', done);
+	}
+};
 
 Generator.prototype.removeHelloDolly = function() {
 	var done = this.async()
@@ -309,7 +257,7 @@ Generator.prototype.removeHelloDolly = function() {
         me.logger.log('Removing Hello Dolly');
         done();
     });
-}
+};
 
 Generator.prototype.setupTheme = function() {
 	if (this.conf.get('installTheme')) {
@@ -319,19 +267,24 @@ Generator.prototype.setupTheme = function() {
 	}
 };
 
-Generator.prototype.commitTheme = function() {
-	if (this.conf.get('git') && this.conf.get('installTheme')) {
+Generator.prototype.initialGitCommit = function() {
+	if (this.conf.get('git')) {
 		var done = this.async(),
 			me = this;
 
-		this.logger.verbose('Committing theme to Git');
+		this.logger.log('Committing everything to git');
 
-		git.add('.', function(err) {
+		git.init(function(err) {
 			if (err) me.logger.error(err);
-		}).commit('Installed theme', function(err, d) {
-			if (err) me.logger.error(err);
-			me.logger.verbose('Done committing: ', JSON.stringify(d, null, '  '));
-			done();
+
+			me.logger.verbose('Git init complete');
+			git.add('.', function(err) {
+				if (err) me.logger.error(err);
+			}).commit('Installed WordPress with custom theme and plugins', function(err, d) {
+				if (err) me.logger.error(err);
+				me.logger.verbose('Done committing: ' + JSON.stringify(d, null, '  '));
+				done();
+			});
 		});
 	}
 };

@@ -1,18 +1,22 @@
 {
   "name": "generator-mattbase",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A WordPress generator for Yeoman by Mattbob",
   "keywords": [
     "yeoman-generator",
+    "wordpress-generator",
     "wordpress",
     "yeoman",
     "generator"
   ],
-  "main": "app/index.js",
+  "homepage": "https://github.com/mattbob/mattbase-generator",
+  "bugs": "https://github.com/mattbob/mattbase-generator/issues",
   "author": {
-    "name": "Mattbob"
+    "name": "Mattbob",
+    "email": "matt@greenishorange.com",
+    "url": "https://github.com/mattbob/mattbase-generator"
   },
-  "license": "BSD",
+  "main": "app/index.js",
   "dependencies": {
     "yeoman-generator": "~0.14.0-rc.2",
     "rimraf": ">=2.1.4",
@@ -21,15 +25,13 @@
     "chalk": "~0.2.1",
     "simple-git": "~0.2.0"
   },
+  "devDependencies": {
+    "grunt": "~0.4.1"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/mattbob/mattbase-generator.git"
   },
-  "devDependencies": {
-    "grunt": "~0.4.1"
-  },
   "readmeFilename": "README.md",
-  "bugs": {
-    "url": "https://github.com/mattbob/mattbase-generator/issues"
-  }
+  "license": "BSD"
 }

@@ -7,6 +7,7 @@ module.exports = function(advanced, defaults) {
 		}
 		return true;
 	};
+
 	// When advanced
 	var advancedWhen = function() {
 		return advanced;
@@ -25,12 +26,6 @@ module.exports = function(advanced, defaults) {
 				}
 				return value;
 			}
-		}, {
-			message: 'WordPress Version:',
-			name: 'wpVer',
-			default: defaults.wpVer || null,
-			validate: requiredValidate,
-			when: advancedWhen,
 		}, {
 			message: 'Table prefix:',
 			name: 'tablePrefix',

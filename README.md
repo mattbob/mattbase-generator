@@ -1,6 +1,6 @@
 # Mattbase Generator
 
-A WordPress generator for Yeoman.
+A WordPress generator for [Yeoman](http://yeoman.io).
 
 ### Getting Started
 - Make sure you have [yo](https://github.com/yeoman/yo) & [grunt-cli](http://gruntjs.com/getting-started) installed:
