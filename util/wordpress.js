@@ -27,12 +27,12 @@ function getSaltKeys(callback) {
 
 
 function installTheme(generator, config, done) {
-    if (config.themeType == 'git') {
+    if (config.themeType == 'GitHub') {
         generator.remote(config.themeUser, config.themeRepo, config.themeBranch, function(err, remote) {
             remote.directory('.', path.join('wp-content/themes', config.themeDir));
             done();
         });
-    } else if (config.themeType == 'tar') {
+    } else if (config.themeType == 'Zip File') {
         generator.tarball(config.themeTarballUrl, path.join('wp-content/themes', config.themeDir), done);
     }
 };

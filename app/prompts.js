@@ -15,22 +15,17 @@ module.exports = function(advanced, defaults) {
 
 	return [
 		{
-			message: 'WordPress URL:',
+			message: 'Site URL:',
 			name: 'url',
 			default: defaults.url || null,
 			validate: requiredValidate,
-			filter: function(value) {
-				value = value.replace(/\/+$/g, '');
-				if (!/^http[s]?:\/\//.test(value)) {
-					value = 'http://' + value;
+			filter: function(val) {
+				val = val.replace(/\/+$/g, '');
+				if (!/^http[s]?:\/\//.test(val)) {
+					val = 'http://' + val;
 				}
-				return value;
+				return val;
 			}
-		}, {
-			message: 'Table prefix:',
-			name: 'tablePrefix',
-			default: defaults.tablePrefix || 'wp_',
-			validate: requiredValidate
 		}, {
 			message: 'Database host:',
 			name: 'dbHost',
@@ -51,33 +46,35 @@ module.exports = function(advanced, defaults) {
 			name: 'dbPass',
 			default: defaults.dbPass || null
 		}, {
-			message: 'Use Git?',
+			message: 'Database table prefix:',
+			name: 'tablePrefix',
+			default: defaults.tablePrefix || 'wp_',
+			validate: requiredValidate
+		}, {
+			message: 'Would you like to setup Git?',
 			name: 'git',
-			default: defaults.git || 'N',
 			type: 'confirm'
 		}, {
-			message: 'Install a custom theme?',
+			message: 'Would you like to install a custom theme?',
 			name: 'installTheme',
-			type: 'confirm',
-			default: (typeof defaults.installTheme !== 'undefined') ? defaults.installTheme : true
+			type: 'confirm'
 		}, {
 			message: 'Theme directory name:',
 			name: 'themeDir',
 			default: defaults.themeDir || 'mattbase',
 			validate: requiredValidate,
+			filter: function(val) {
+				return val.toLowerCase();
+			},
 			when: function(res) {
 				return !!res.installTheme;
 			}
 		}, {
-			message: 'Theme source type (git/tar):',
+			message: 'Install the theme from GitHub or a zip file?',
 			name: 'themeType',
-			default: defaults.themeType || 'git',
-			validate: function(value) {
-				if (value != '' && /^(?:git|tar)$/.test(value)) {
-					return true;
-				}
-				return false;
-			},
+			type: 'list',
+			choices: [ 'GitHub', 'Zip File' ],
+			default: defaults.themeType || 'GitHub',
 			when: function(res) {
 				return !!res.installTheme;
 			}
@@ -87,7 +84,7 @@ module.exports = function(advanced, defaults) {
 			default: defaults.themeUser || 'mattbob',
 			validate: requiredValidate,
 			when: function(res) {
-				return !!res.installTheme && res.themeType == 'git';
+				return !!res.installTheme && res.themeType == 'GitHub';
 			}
 		}, {
 			message: 'GitHub repository name:',
@@ -95,23 +92,23 @@ module.exports = function(advanced, defaults) {
 			default: defaults.themeRepo || 'mattbase',
 			validate: requiredValidate,
 			when: function(res) {
-				return !!res.installTheme && res.themeType == 'git';
+				return !!res.installTheme && res.themeType == 'GitHub';
 			}
 		}, {
-			message: 'Repository branch:',
+			message: 'GitHub repository branch:',
 			name: 'themeBranch',
 			default: defaults.themeBranch || 'master',
 			validate: requiredValidate,
 			when: function(res) {
-				return !!res.installTheme && res.themeType == 'git';
+				return !!res.installTheme && res.themeType == 'GitHub';
 			}
 		}, {
-			message: 'Remote tarball url:',
+			message: 'URL to the theme zip file:',
 			name: 'themeTarballUrl',
-			default: defaults.themeTarballUrl || 'https://github.com/mattbob/mattbase/tarball/master',
+			default: defaults.themeTarballUrl || 'https://wordpress.org/themes/download/twentyfourteen.1.0.zip',
 			validate: requiredValidate,
 			when: function(res) {
-				return !!res.installTheme && res.themeType == 'tar';
+				return !!res.installTheme && res.themeType == 'Zip File';
 			}
 		}, {
 		    type: 'checkbox',
