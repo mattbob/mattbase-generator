@@ -8,7 +8,7 @@ module.exports = {
 		chalk.green('   | | | | .\'|  _|  _| . | .\'|_ -| -_|   '),
 		chalk.green('   |_|_|_|__,|_| |_| |___|__,|___|___|'   ),
 		'',
-		chalk.bold.green('A Yeoman Generator For WordPress - v0.2.2'),
+		chalk.bold.green('A Yeoman Generator For WordPress - v0.2.3'),
 		''
 	].join('\n'),
 
