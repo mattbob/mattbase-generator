@@ -1,6 +1,6 @@
 {
   "name": "generator-mattbase",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "description": "A WordPress generator for Yeoman by Mattbob",
   "keywords": [
     "yeoman-generator",

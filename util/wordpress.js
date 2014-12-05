@@ -39,17 +39,16 @@ function installTheme(generator, config, done) {
 
 
 function setupTheme(generator, config, done) {
-	console.log(chalk.green('Setting up theme'));
-
 	var themePath = 'wp-content/themes/' + config.themeDir,
 		themePackageJson = themePath + '/package.json';
 
 	if (fs.existsSync(themePackageJson)) {
 		var oldDir = process.cwd();
 		process.chdir(themePath);
+		console.log(chalk.green('Installing Node modules'));
 		exec('npm install', function(err) {
 			if (fs.existsSync('Gruntfile.js')) {
-				exec('grunt setup', function(err) {
+				exec('grunt', function(err) {
 					console.log(chalk.green('Setting up Grunt'));
 					process.chdir(oldDir);
 					done();

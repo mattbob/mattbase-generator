@@ -116,7 +116,7 @@ Generator.prototype.installWP = function() {
 		me   = this;
 
 	this.logger.log('Installing WordPress');
-	this.tarball('https://github.com/wordpress/wordpress/archive/master.tar.gz', '.', done);
+	this.tarball('http://wordpress.org/latest.zip', '.', done);
 };
 
 Generator.prototype.configSetup = function() {
@@ -140,9 +140,9 @@ Generator.prototype.createLocalConfig = function() {
 
 Generator.prototype.setPermissions = function() {
 	if (fs.existsSync('.')) {
-		this.logger.log('Setting Permissions: 0755 on .');
+		this.logger.log('Setting permissions: 0755 on ./');
 		wrench.chmodSyncRecursive('.', 0755);
-		this.logger.verbose('Done setting permissions on .');
+		this.logger.verbose('Done setting permissions on ./');
 	}
 };
 
@@ -171,7 +171,7 @@ Generator.prototype.installTheme = function() {
 		var done = this.async()
 			me = this;
 
-		this.logger.log('Setting up theme');
+		this.logger.log('Installing theme');
 		wordpress.installTheme(this, this.conf.get(), function() {
 			me.logger.verbose('Theme install complete');
 			done();
@@ -199,16 +199,6 @@ Generator.prototype.installMenuEditor = function() {
 	}
 };
 
-Generator.prototype.installGoogleSitemapGenerator = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('googleSitemapGenerator') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Google Sitemap Generator plugin');
-		this.tarball('https://github.com/wp-plugins/google-sitemap-generator/archive/master.tar.gz', 'wp-content/plugins/google-sitemap-generator', done);
-	}
-};
-
 Generator.prototype.installGFplugin = function() {
 	var plugins = this.conf.get('pluginsList');
 
@@ -229,13 +219,13 @@ Generator.prototype.installHelpfulInformation = function() {
 	}
 };
 
-Generator.prototype.installSPOplugin = function() {
+Generator.prototype.installNestedPages = function() {
 	var plugins = this.conf.get('pluginsList');
 
-	if(plugins.indexOf('simplePageOrdering') > -1) {
+	if(plugins.indexOf('nestedPages') > -1) {
 		var done = this.async();
-		this.logger.log('Installing Simple Page Ordering plugin');
-		this.tarball('https://github.com/wp-plugins/simple-page-ordering/archive/master.tar.gz', 'wp-content/plugins/simple-page-ordering', done);
+		this.logger.log('Installing Nested Pages plugin');
+		this.tarball('https://github.com/wp-plugins/wp-nested-pages/archive/master.tar.gz', 'wp-content/plugins/wp-nested-pages', done);
 	}
 };
 
@@ -295,5 +285,11 @@ Generator.prototype.saveSettings = function() {
 };
 
 Generator.prototype.finishedMessage = function() {
-	this.logger.log(chalk.bold.green('\nThat\'s all folks!\n'), {logPrefix: ''});
+	var myArray = [
+		'Peace and blessings.',
+		'That\'s all folks!',
+		'Keep it real, playa.'
+	];
+	var rand = myArray[Math.floor(Math.random() * myArray.length)];
+	this.logger.log(chalk.bold.green('\n' + rand + '\n'), {logPrefix: ''});
 };

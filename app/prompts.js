@@ -123,10 +123,6 @@ module.exports = function(advanced, defaults) {
 		      value: 'ACFplugin',
 		      checked: true
 		    }, {
-		      name: 'Google Sitemap Generator',
-		      value: 'googleSitemapGenerator',
-		      checked: true
-		    }, {
 		      name: 'Gravity Forms',
 		      value: 'gravityForms',
 		      checked: true
@@ -135,8 +131,8 @@ module.exports = function(advanced, defaults) {
 		      value: 'helpfulInformation',
 		      checked: true
 		    }, {
-		      name: 'Simple Page Ordering',
-		      value: 'simplePageOrdering',
+		      name: 'Nested Pages',
+		      value: 'nestedPages',
 		      checked: true
 		    }, {
 		      name: 'WordPress SEO',
