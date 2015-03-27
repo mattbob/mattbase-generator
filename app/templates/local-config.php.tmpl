@@ -1,9 +1,9 @@
 <?php
 
-define('DB_NAME', '<%= conf.get('dbName') %>');
-define('DB_USER', '<%= conf.get('dbUser') %>');
-define('DB_PASSWORD', '<%= conf.get('dbPass') %>');
-define('DB_HOST', '<%= conf.get('dbHost') %>');
-$table_prefix  = '<%= conf.get('tablePrefix') %>';
+define('DB_NAME', '<%= dbName %>');
+define('DB_USER', '<%= dbUser %>');
+define('DB_PASSWORD', '<% dbPass %>');
+define('DB_HOST', '<%= dbHost %>');
+$table_prefix  = '<%= tablePrefix %>';
 
 define( 'WP_DEBUG', true );

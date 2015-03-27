@@ -3,9 +3,9 @@
  * The base configurations of the WordPress.
  *
  * This file has the following configurations: MySQL settings, Table Prefix,
- * Secret Keys, WordPress Language, and ABSPATH. You can find more information
- * by visiting {@link http://codex.wordpress.org/Editing_wp-config.php Editing
- * wp-config.php} Codex page. You can get the MySQL settings from your web host.
+ * Secret Keys, and ABSPATH. You can find more information by visiting
+ * {@link http://codex.wordpress.org/Editing_wp-config.php Editing wp-config.php}
+ * Codex page. You can get the MySQL settings from your web host.
  *
  * This file is used by the wp-config.php creation script during the
  * installation. You don't have to use the web site, you can just copy this file
@@ -21,27 +21,23 @@ if (file_exists(dirname(__FILE__) . '/local-config.php')) {
 
 // Global DB config
 if (!defined('DB_NAME')) {
-	define('DB_NAME', '<%= conf.get('dbName') %>');
+	define('DB_NAME', '');
 }
 if (!defined('DB_USER')) {
-	define('DB_USER', '<%= conf.get('dbUser') %>');
+	define('DB_USER', '');
 }
 if (!defined('DB_PASSWORD')) {
-	define('DB_PASSWORD', '<%= conf.get('dbPass') %>');
+	define('DB_PASSWORD', '');
 }
 if (!defined('DB_HOST')) {
-	define('DB_HOST', '<%= conf.get('dbHost') %>');
+	define('DB_HOST', '');
 }
 
 /** Database Charset to use in creating database tables. */
-if (!defined('DB_CHARSET')) {
-	define('DB_CHARSET', 'utf8');
-}
+define('DB_CHARSET', 'utf8');
 
 /** The Database Collate type. Don't change this if in doubt. */
-if (!defined('DB_COLLATE')) {
-	define('DB_COLLATE', '');
-}
+define('DB_COLLATE', '');
 
 /**#@+
  * Authentication Unique Keys and Salts.
@@ -52,7 +48,8 @@ if (!defined('DB_COLLATE')) {
  *
  * @since 2.6.0
  */
-<%= conf.get('saltKeys') %>
+<%= saltKeys %>
+
 /**#@-*/
 
 /**
@@ -61,17 +58,7 @@ if (!defined('DB_COLLATE')) {
  * You can have multiple installations in one database if you give each a unique
  * prefix. Only numbers, letters, and underscores please!
  */
-$table_prefix  = '<%= conf.get('tablePrefix') %>';
-
-/**
- * WordPress Localized Language, defaults to English.
- *
- * Change this to localize WordPress. A corresponding MO file for the chosen
- * language must be installed to wp-content/languages. For example, install
- * de_DE.mo to wp-content/languages and set WPLANG to 'de_DE' to enable German
- * language support.
- */
-define('WPLANG', '');
+$table_prefix  = '<%= tablePrefix %>';
 
 /**
  * For developers: WordPress debugging mode.
@@ -85,19 +72,21 @@ if (!defined('WP_DEBUG')) {
 }
 
 if ( WP_DEBUG ) {
-  /* Tells WordPress to log everything to the /wp-content/debug.log file */
-  define( 'WP_DEBUG_LOG', true );
+	/* Tells WordPress to log everything to the /wp-content/debug.log file */
+	define('WP_DEBUG_LOG', true);
 
-  /* Hides debug errors inside the HTML (using DEBUG_LOG instead) */
-  define( 'WP_DEBUG_DISPLAY', false );
-  @ini_set( 'display_errors', 0 );
+	/* Hides debug errors inside the HTML (using DEBUG_LOG instead) */
+	define('WP_DEBUG_DISPLAY', false);
+	@ini_set('display_errors', 0);
 
-  /* This will force WordPress to use the "dev" versions of core CSS and Javascript files rather than the minified versions that are normally loaded. This is useful when you are testing modifications to any built-in .js or .css files. Default is false. */
-  define('SCRIPT_DEBUG', true);
+	/* This will force WordPress to use the "dev" versions of core CSS and Javascript files rather than the minified versions that are normally loaded. This is useful when you are testing modifications to any built-in .js or .css files. Default is false. */
+	define('SCRIPT_DEBUG', true);
 
-  /* The SAVEQUERIES definition saves the database queries to an array and that array can be displayed to help analyze those queries. The information saves each query, what function called it, and how long that query took to execute. */
-  define('SAVEQUERIES', true);
+	/* The SAVEQUERIES definition saves the database queries to an array and that array can be displayed to help analyze those queries. The information saves each query, what function called it, and how long that query took to execute. */
+	define('SAVEQUERIES', true);
 }
+
+define('WP_DEFAULT_THEME', '<%= themeDir %>');
 
 /* That's all, stop editing! Happy blogging. */
 

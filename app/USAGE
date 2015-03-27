@@ -1,5 +1,0 @@
-Description:
-    Creates a new WordPress site with custom theme and plugins.
-
-Example:
-    yo mattbase [--log-level=<LEVEL>] [--advanced] [--verbose]

@@ -16,8 +16,7 @@ A WordPress generator for [Yeoman](http://yeoman.io).
 - Removes the default WordPress themes
 - Optionally installs a custom theme
 - Optionally installs a set of plugins
-- Removes the Hello Dolly plugin
-- Initializes and commits to git repo
+- Initializes and commits to a git repo
 
 ### Uninstall
 - To remove the generator run: `npm uninstall -g generator-mattbase`

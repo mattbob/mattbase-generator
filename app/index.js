@@ -1,295 +1,437 @@
-// Requirements
-var util         = require('util'),
-	fs           = require('fs'),
-	yeoman       = require('yeoman-generator'),
-	wrench       = require('wrench'),
+'use strict';
+
+var async        = require('async'),
 	chalk        = require('chalk'),
-	rimraf       = require('rimraf'),
+	path         = require('path'),
+	util         = require('util'),
+	shell        = require('shelljs'),
+	https        = require('https'),
 	git          = require('simple-git')(),
-	wordpress    = require('../util/wordpress'),
-	art          = require('../util/art'),
-	Logger       = require('../util/log'),
-	Config       = require('../util/config');
+	EventEmitter = require('events').EventEmitter,
+	yeoman       = require('yeoman-generator');
 
 
-// Export the module
-module.exports = Generator;
-
-// Extend the base generator
-function Generator(args, options, config) {
+var mattbase = function(args, options, config) {
 	yeoman.generators.Base.apply(this, arguments);
-
-	// Log level option
-	this.option('log', {
-		desc: 'The log verbosity level: [ verbose | log | warn | error ]',
-		defaults: 'log',
-		alias: 'l',
-		name: 'level'
-	});
-
-	// Enable advanced features
-	this.option('advanced', {
-		desc: 'Makes advanced features available',
-		alias: 'a'
-	});
-
-	// Shortcut for --log=verbose
-	this.option('verbose', {
-		desc: 'Verbose logging',
-		alias: 'v'
-	});
-	if (this.options.verbose) {
-		this.options.log = 'verbose';
-	}
-
-	// Setup the logger
-	this.logger = Logger({
-		level: this.options.log
-	});
-
-	// Log the options
-	this.logger.verbose('\nOptions: ' + JSON.stringify(this.options, null, '  '));
-
-	// Load the config files
-	this.conf = new Config();
 };
 
-util.inherits(Generator, yeoman.generators.Base);
+util.inherits(mattbase, yeoman.generators.Base);
 
-
-// Ask the user what they want done
-Generator.prototype.ohTellMeWhatYouWantWhatYouReallyReallyWant = function() {
-	// This is an async step
+mattbase.prototype.askPrompts = function() {
 	var done = this.async(),
-		me = this;
+		me   = this;
 
-	// Display welcome message
-	this.logger.log(art.wp, {logPrefix: ''});
+	this.log('');
+	this.log(chalk.green('   _____     _   _   _                   '));
+	this.log(chalk.green('  |     |___| |_| |_| |_ ___ ___ ___     '));
+	this.log(chalk.green('  | | | | .\'|  _|  _| . | .\'|_ -| -_|  '));
+	this.log(chalk.green('  |_|_|_|__,|_| |_| |___|__,|___|___|    '));
+	this.log('');
+	this.log(chalk.bold.green('A Yeoman Generator For WordPress - v1.0'));
+	this.log('');
 
-	getInput();
+	var requiredValidate = function(value) {
+		if (value === '') {
+			return 'This field is required.';
+		}
+		return true;
+	};
 
-	// Get the input
 	function getInput() {
-		me.prompt(require('./prompts')(me.options.advanced, me.conf.get()), function(input) {
-			me.prompt([{
+		var prompts = [
+			{
+				message: 'Site Name:',
+				name: 'siteName',
+				validate: requiredValidate
+			}, {
+				message: 'Site URL:',
+				name: 'url',
+				validate: requiredValidate,
+				filter: function(val) {
+					val = val.replace(/\/+$/g, '');
+					if (!/^http[s]?:\/\//.test(val)) {
+						val = 'http://' + val;
+					}
+					return val;
+				}
+			}, {
+				message: 'Would you like to setup Git?',
+				name: 'git',
+				type: 'confirm'
+			}, {
+				message: 'Where will the git repo be hosted?',
+				name: 'gitSrc',
+				type: 'list',
+				choices: [ 'BitBucket', 'GitHub' ],
+				default: 'BitBucket',
+				when: function(res) {
+					return !!res.git;
+				}
+			}, {
+				message: 'Git account username:',
+				name: 'gitUser',
+				validate: requiredValidate,
+				when: function(res) {
+					return !!res.git;
+				}
+			}, {
+				message: 'Git repo:',
+				name: 'gitRepo',
+				validate: requiredValidate,
+				when: function(res) {
+					return !!res.git;
+				}
+			}, {
+				message: 'Database host:',
+				name: 'dbHost',
+				default: 'localhost',
+				validate: requiredValidate
+			}, {
+				message: 'Database name:',
+				name: 'dbName',
+				validate: requiredValidate
+			}, {
+				message: 'Database user:',
+				name: 'dbUser',
+				default: 'root',
+				validate: requiredValidate
+			}, {
+				message: 'Database password:',
+				name: 'dbPass',
+				default: 'root',
+				validate: requiredValidate
+			}, {
+				message: 'Database table prefix:',
+				name: 'tablePrefix',
+				default: 'wp_',
+				validate: requiredValidate
+			}, {
+				message: 'Would you like to install a custom theme or use the default Mattbase Framework?',
+				name: 'themeType',
+				type: 'list',
+				choices: [ 'Mattbase Framework', 'Install from GitHub', 'Install from zip file' ],
+				default: 'Mattbase Framework'
+			}, {
+				message: 'Theme directory name:',
+				name: 'themeDir',
+				validate: requiredValidate,
+				filter: function(val) {
+					return val.toLowerCase();
+				},
+				when: function(res) {
+					return res.themeType === 'Mattbase Framework';
+				}
+			}, {
+				message: 'GitHub username:',
+				name: 'githubUser',
+				default: 'roots',
+				validate: requiredValidate,
+				when: function(res) {
+					return res.themeType === 'Install from GitHub';
+				}
+			}, {
+				message: 'GitHub repository name:',
+				name: 'githubRepo',
+				default: 'sage',
+				validate: requiredValidate,
+				when: function(res) {
+					return res.themeType === 'Install from GitHub';
+				}
+			}, {
+				message: 'GitHub repository branch:',
+				name: 'githubBranch',
+				default: 'master',
+				validate: requiredValidate,
+				when: function(res) {
+					return res.themeType === 'Install from GitHub';
+				}
+			}, {
+				message: 'URL to the theme zip file:',
+				name: 'zipUrl',
+				default: 'https://downloads.wordpress.org/theme/twentyfifteen.1.0.zip',
+				validate: requiredValidate,
+				when: function(res) {
+					return res.themeType === 'Install from zip file';
+				}
+			}, {
+				type: 'checkbox',
+				name: 'pluginsList',
+				message: 'Which plugins would you like to install?',
+				choices: [{
+					name: 'Admin Menu Editor',
+					value: 'adminMenuEditor',
+					checked: true
+				}, {
+					name: 'Advanced Custom Fields',
+					value: 'ACFplugin',
+					checked: true
+				}, {
+					name: 'Gravity Forms',
+					value: 'gravityForms',
+					checked: true
+				}, {
+					name: 'Nested Pages',
+					value: 'nestedPages',
+					checked: true
+				}, {
+					name: 'WordPress SEO',
+					value: 'wordpressSEO',
+					checked: true
+				}]
+			}, {
 				message: 'Does this all look correct?',
 				name: 'confirm',
 				type: 'confirm'
-			}], function(i) {
-				if (i.confirm) {
-					// Set port
-					var portRegex = /:[\d]+$/;
-					var port = input.url.match(portRegex);
-					if (port) input.port = port[0].replace(':', '');
+			}
+		];
 
-					// Remove port from url
-					input.url = input.url.replace(portRegex, '');
+		me.prompt(prompts, function(props) {
+			me.siteName = props.siteName;
+			me.url = props.url;
+			me.git = props.git;
+			me.gitSrc = props.gitSrc;
+			me.gitUser = props.gitUser;
+			me.gitRepo = props.gitRepo;
+			me.dbHost = props.dbHost;
+			me.dbName = props.dbName;
+			me.dbUser = props.dbUser;
+			me.dbPass = props.dbPass;
+			me.tablePrefix = props.tablePrefix;
+			me.themeType = props.themeType;
+			me.themeDir = props.themeDir;
+			me.githubUser = props.githubUser;
+			me.githubRepo = props.githubRepo;
+			me.githubBranch = props.githubBranch;
+			me.zipUrl = props.zipUrl;
+			me.pluginsList = props.pluginsList;
+			me.confirm = props.confirm;
 
-					// Save the users input
-					me.conf.set(input);
-					me.logger.verbose('User Input: ' + JSON.stringify(me.conf.get(), null, '  '));
-					me.logger.log(art.go, {logPrefix: ''});
-					done();
-				} else {
-					console.log();
-					getInput();
-				}
-			});
-		});
-	}
+			if( me.confirm ) {
+				done();
+			} else {
+				getInput();
+			}
+		}.bind(me));
+	} // getInput
+
+	getInput();
 };
 
-Generator.prototype.createGitignore = function() {
-	if (this.conf.get('git')) {
-		var done = this.async(),
-			me = this;
+mattbase.prototype.downloadWordPress = function() {
+	var done = this.async();
 
-		this.logger.log('Creating .gitignore file');
-		this.copy('gitignore.tmpl', '.gitignore');
-		this.logger.verbose('Done copying .gitignore file');
-		done();
-	}
+	this.log('');
+	this.log(chalk.green('Downloading the latest version of WordPress...'));
+	this.extract('http://wordpress.org/latest.zip', '.', done);
 };
 
-Generator.prototype.installWP = function() {
+mattbase.prototype.moveWordPress = function() {
+	shell.exec('mv wordpress/* .');
+	shell.rm('-rf', 'wordpress');
+};
+
+mattbase.prototype.installTheme = function() {
 	var done = this.async(),
 		me   = this;
 
-	this.logger.log('Installing WordPress');
-	this.tarball('http://wordpress.org/latest.zip', '.', done);
-};
+	// MATTBASE
+	if(this.themeType === 'Mattbase Framework') {
 
-Generator.prototype.configSetup = function() {
-	var done = this.async(),
-		me   = this;
+		this.log(chalk.green('Installing Mattbase Framework...'));
 
-	this.logger.log('Getting salt keys');
-	wordpress.getSaltKeys(function(saltKeys) {
-		me.logger.verbose('Salt keys: ' + JSON.stringify(saltKeys, null, '  '));
-		me.conf.set('saltKeys', saltKeys);
-		me.logger.log('Copying wp-config.php');
-		me.template('wp-config.php.tmpl', 'wp-config.php');
-		done();
-	});
-};
+		this.remote('mattbob', 'mattbase', 'master', function(err, remote) {
+			if (err) {
+				return done(err);
+			}
 
-Generator.prototype.createLocalConfig = function() {
-	this.logger.log('Copying local-config.php');
-	this.template('local-config.php.tmpl', 'local-config.php');
-};
+			remote.directory('.', 'wp-content/themes/' + me.themeDir + '/');
 
-Generator.prototype.setPermissions = function() {
-	if (fs.existsSync('.')) {
-		this.logger.log('Setting permissions: 0755 on ./');
-		wrench.chmodSyncRecursive('.', 0755);
-		this.logger.verbose('Done setting permissions on ./');
-	}
-};
-
-Generator.prototype.removeDefaultThemes = function() {
-	var done = this.async(),
-		me   = this;
-
-	fs.readdir('wp-content/themes', function (err, files) {
-		if (typeof files !== 'undefined' && files.length !== 0) {
-			files.forEach(function (file) {
-		    	var pathFile = fs.realpathSync('wp-content/themes/' + file),
-		    	isDirectory = fs.statSync(pathFile).isDirectory();
-
-		    	if (isDirectory) {
-		    		rimraf.sync(pathFile);
-		    		me.log.writeln('Removing ' + pathFile);
-		    	}
-		    });
-		}
-		done();
-	});
-};
-
-Generator.prototype.installTheme = function() {
-	if (this.conf.get('installTheme')) {
-		var done = this.async()
-			me = this;
-
-		this.logger.log('Installing theme');
-		wordpress.installTheme(this, this.conf.get(), function() {
-			me.logger.verbose('Theme install complete');
 			done();
-		});
+		}, true);
+
+	// GITHUB
+	} else if (this.themeType === 'Install from GitHub') {
+
+		this.log(chalk.green('Installing https://github.com/' + this.githubUser + '/' + this.githubRepo + '...'));
+
+		this.remote(me.githubUser, me.githubRepo, me.githubBranch, function(err, remote) {
+			if (err) {
+				return done(err);
+			}
+
+			remote.directory('.', 'wp-content/themes/' + me.githubRepo + '/');
+
+			done();
+		}, true);
+
+	// ZIP FILE
+	} else if (this.themeType === 'Install from zip file') {
+
+		this.log(chalk.green('Installing WordPress theme from zip file...'));
+
+		this.extract(this.zipUrl, 'wp-content/themes/', done);
+
 	}
 };
 
-Generator.prototype.installACFplugin = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('ACFplugin') > -1) {
+mattbase.prototype.getLatestJquery = function() {
+	if(this.themeType === 'Mattbase Framework') {
 		var done = this.async();
-		this.logger.log('Installing Advanced Custom Fields plugin');
-		this.tarball('https://github.com/elliotcondon/acf/archive/master.tar.gz', 'wp-content/plugins/acf', done);
+
+		this.log(chalk.green('Grabbing latest version of jQuery...'));
+
+		this.fetch('https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js', 'wp-content/themes/' + this.themeDir + '/assets/js/', done);
 	}
 };
 
-Generator.prototype.installMenuEditor = function() {
-	var plugins = this.conf.get('pluginsList');
+mattbase.prototype.getLatestNormalize = function() {
+	if(this.themeType === 'Mattbase Framework') {
+		var done = this.async();
+
+		this.log(chalk.green('Grabbing latest version of Normalize.css...'));
+
+		this.fetch('https://raw.githubusercontent.com/necolas/normalize.css/master/normalize.css', 'wp-content/themes/' + this.themeDir + '/assets/css/', done);
+	}
+};
+
+mattbase.prototype.adminMenuEditor = function() {
+	var plugins = this.pluginsList;
 
 	if(plugins.indexOf('adminMenuEditor') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Admin Menu Editor plugin');
-		this.tarball('https://github.com/wp-plugins/admin-menu-editor/archive/master.tar.gz', 'wp-content/plugins/admin-menu-editor', done);
+		var done    = this.async();
+
+		this.log(chalk.green('Installing Admin Menu Editor plugin...'));
+		this.extract('https://github.com/wp-plugins/admin-menu-editor/archive/master.tar.gz', 'wp-content/plugins/admin-menu-editor', done);
 	}
 };
 
-Generator.prototype.installGFplugin = function() {
-	var plugins = this.conf.get('pluginsList');
+mattbase.prototype.ACFplugin = function() {
+	var plugins = this.pluginsList;
+
+	if(plugins.indexOf('ACFplugin') > -1) {
+		var done    = this.async();
+
+		this.log(chalk.green('Installing Advanced Custom Fields plugin...'));
+		this.extract('https://github.com/elliotcondon/acf/archive/master.tar.gz', 'wp-content/plugins/advanced-custom-fields', done);
+	}
+};
+
+mattbase.prototype.gravityForms = function() {
+	var plugins = this.pluginsList;
 
 	if(plugins.indexOf('gravityForms') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Gravity Forms plugin');
-		this.tarball('https://github.com/gravityforms/gravityforms/archive/master.tar.gz', 'wp-content/plugins/gravityforms', done);
+		var done    = this.async();
+
+		this.log(chalk.green('Installing Gravity Forms plugin...'));
+		this.extract('https://github.com/gravityforms/gravityforms/archive/master.tar.gz', 'wp-content/plugins/gravityforms', done);
 	}
 };
 
-Generator.prototype.installHelpfulInformation = function() {
-	var plugins = this.conf.get('pluginsList');
-
-	if(plugins.indexOf('helpfulInformation') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Helpful Information plugin');
-		this.tarball('https://github.com/wp-plugins/helpful-information/archive/master.tar.gz', 'wp-content/plugins/helpful-information', done);
-	}
-};
-
-Generator.prototype.installNestedPages = function() {
-	var plugins = this.conf.get('pluginsList');
+mattbase.prototype.nestedPages = function() {
+	var plugins = this.pluginsList;
 
 	if(plugins.indexOf('nestedPages') > -1) {
-		var done = this.async();
-		this.logger.log('Installing Nested Pages plugin');
-		this.tarball('https://github.com/wp-plugins/wp-nested-pages/archive/master.tar.gz', 'wp-content/plugins/wp-nested-pages', done);
+		var done    = this.async();
+
+		this.log(chalk.green('Installing Nested Pages plugin...'));
+		this.extract('https://github.com/wp-plugins/wp-nested-pages/archive/master.tar.gz', 'wp-content/plugins/wp-nested-pages', done);
 	}
 };
 
-Generator.prototype.installWordPressSEO = function() {
-	var plugins = this.conf.get('pluginsList');
+mattbase.prototype.wordpressSEO = function() {
+	var plugins = this.pluginsList;
 
 	if(plugins.indexOf('wordpressSEO') > -1) {
-		var done = this.async();
-		this.logger.log('Installing WordPress SEO plugin');
-		this.tarball('https://github.com/Yoast/wordpress-seo/archive/master.tar.gz', 'wp-content/plugins/wordpress-seo', done);
+		var done    = this.async();
+
+		this.log(chalk.green('Installing WordPress SEO plugin...'));
+		this.extract('https://github.com/Yoast/wordpress-seo/archive/master.tar.gz', 'wp-content/plugins/wordpress-seo', done);
 	}
 };
 
-Generator.prototype.removeHelloDolly = function() {
-	var done = this.async()
-		me = this;
+mattbase.prototype.finalSetupChanges = function() {
+	var done = this.async(),
+		me   = this;
 
-	rimraf('wp-content/plugins/hello.php', function () {
-        me.logger.log('Removing Hello Dolly');
-        done();
-    });
-};
+	this.log(chalk.green('Almost done...'));
 
-Generator.prototype.setupTheme = function() {
-	if (this.conf.get('installTheme')) {
-		this.logger.log('Starting theme setup');
-		wordpress.setupTheme(this, this.conf.get(), this.async());
-		this.logger.verbose('Theme setup complete');
-	}
-};
+	function getSaltKeys(callback) {
+		var ee   = new EventEmitter(),
+			keys = '';
 
-Generator.prototype.initialGitCommit = function() {
-	if (this.conf.get('git')) {
-		var done = this.async(),
-			me = this;
-
-		this.logger.log('Committing everything to git');
-
-		git.init(function(err) {
-			if (err) me.logger.error(err);
-
-			me.logger.verbose('Git init complete');
-			git.add('.', function(err) {
-				if (err) me.logger.error(err);
-			}).commit('Installed WordPress with custom theme and plugins', function(err, d) {
-				if (err) me.logger.error(err);
-				me.logger.verbose('Done committing: ' + JSON.stringify(d, null, '  '));
-				done();
+		https.get("https://api.wordpress.org/secret-key/1.1/salt/", function(res) {
+			res.on('data', function(d) {
+				keys += d.toString();
+			}).on('end', function() {
+				ee.emit('end', keys);
 			});
 		});
+
+		if (typeof callback === 'function') {
+			ee.on('end', callback);
+		}
+
+		return ee;
+	}
+
+	getSaltKeys(function(saltKeys) {
+		me.saltKeys = saltKeys;
+		me.template('wp-config.php.tmpl', 'wp-config.php');
+	});
+
+	this.template('local-config.php.tmpl', 'local-config.php');
+
+	if(this.themeType === 'Mattbase Framework') {
+		this.directory('mu-plugins', 'wp-content/mu-plugins');
+		this.directory('themes/mattbase/assets', 'wp-content/themes/' + this.themeDir + '/assets');
+
+		this.template('themes/mattbase/functions.php', 'wp-content/themes/' + this.themeDir + '/functions.php');
+		this.template('themes/mattbase/style.css', 'wp-content/themes/' + this.themeDir + '/style.css');
+		this.template('themes/mattbase/inc/scripts.php', 'wp-content/themes/' + this.themeDir + '/inc/scripts.php');
+
+		this.copy('themes/mattbase/footer.php', 'wp-content/themes/' + this.themeDir + '/footer.php');
+		this.copy('themes/mattbase/header.php', 'wp-content/themes/' + this.themeDir + '/header.php');
+	}
+
+	done();
+};
+
+mattbase.prototype.removeDefaultStuff = function() {
+	this.log(chalk.green('Removing default WordPress themes...'));
+	shell.rm('-rf', 'wp-content/themes/twenty*');
+};
+
+mattbase.prototype.gitSetup = function() {
+	if(this.git === true) {
+		var done = this.async(),
+			me   = this,
+			repo;
+
+		if (this.gitSrc === 'BitBucket') {
+			repo = 'https://bitbucket.org/' + this.gitUser + '/' + this.gitRepo + '.git';
+		} else if (this.gitSrc === 'GitHub') {
+			repo = 'https://github.com/' + this.gitUser + '/' + this.gitRepo + '.git';
+		}
+
+		this.log(chalk.green('Setting up git repo...'));
+
+		git.init(function(err) {
+			if (err) {
+				me.log(chalk.red(err));
+			}
+
+			git.add('./*').addRemote('origin', repo).commit('Initial Commit - Installed WordPress using the Mattbase Generator', function(err, d) {
+				if (err) {
+					me.log(chalk.red(err));
+				}
+
+				me.log(chalk.green('Initial commit completed successfully!'));
+			});
+		});
+
+		done();
 	}
 };
 
-Generator.prototype.saveSettings = function() {
-	this.logger.log('Writing .mattbase file');
-	fs.writeFileSync('.mattbase', JSON.stringify(this.conf.get(), null, '\t'));
-};
 
-Generator.prototype.finishedMessage = function() {
-	var myArray = [
-		'Peace and blessings.',
-		'That\'s all folks!',
-		'Keep it real, playa.'
-	];
-	var rand = myArray[Math.floor(Math.random() * myArray.length)];
-	this.logger.log(chalk.bold.green('\n' + rand + '\n'), {logPrefix: ''});
-};
+module.exports = mattbase;
