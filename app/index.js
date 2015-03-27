@@ -230,6 +230,13 @@ mattbase.prototype.moveWordPress = function() {
 	shell.rm('-rf', 'wordpress');
 };
 
+mattbase.prototype.removeDefaultStuff = function() {
+	this.log(chalk.green('Removing default WordPress themes and plugins...'));
+	shell.rm('-rf', 'wp-content/themes/twenty*');
+	shell.rm('-rf', 'wp-content/plugins/hello.php');
+	shell.rm('-rf', 'wp-content/plugins/akismet/');
+};
+
 mattbase.prototype.installTheme = function() {
 	var done = this.async(),
 		me   = this;
@@ -394,11 +401,6 @@ mattbase.prototype.finalSetupChanges = function() {
 	}
 
 	done();
-};
-
-mattbase.prototype.removeDefaultStuff = function() {
-	this.log(chalk.green('Removing default WordPress themes...'));
-	shell.rm('-rf', 'wp-content/themes/twenty*');
 };
 
 mattbase.prototype.gitSetup = function() {
