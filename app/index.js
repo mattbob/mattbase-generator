@@ -22,12 +22,12 @@ mattbase.prototype.askPrompts = function() {
 		me   = this;
 
 	this.log('');
-	this.log(chalk.green('   _____     _   _   _                   '));
-	this.log(chalk.green('  |     |___| |_| |_| |_ ___ ___ ___     '));
-	this.log(chalk.green('  | | | | .\'|  _|  _| . | .\'|_ -| -_|  '));
-	this.log(chalk.green('  |_|_|_|__,|_| |_| |___|__,|___|___|    '));
+	this.log(chalk.green('    _____     _   _   _                    '));
+	this.log(chalk.green('   |     |___| |_| |_| |_ ___ ___ ___      '));
+	this.log(chalk.green('   | | | | .\'|  _|  _| . | .\'|_ -| -_|   '));
+	this.log(chalk.green('   |_|_|_|__,|_| |_| |___|__,|___|___|     '));
 	this.log('');
-	this.log(chalk.bold.green('A Yeoman Generator For WordPress - v1.0'));
+	this.log(chalk.bold.green('A Yeoman Generator For WordPress - v1.0.1'));
 	this.log('');
 
 	var requiredValidate = function(value) {
