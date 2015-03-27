@@ -86,8 +86,12 @@ if ( WP_DEBUG ) {
 	define('SAVEQUERIES', true);
 }
 
+<% if(themeType === 'Mattbase Framework') { %>
 define('WP_DEFAULT_THEME', '<%= themeDir %>');
-
+<% } %>
+<% if(themeType === 'Install from GitHub') { %>
+define('WP_DEFAULT_THEME', '<%= githubRepo %>');
+<% } %>
 /* That's all, stop editing! Happy blogging. */
 
 /** Absolute path to the WordPress directory. */

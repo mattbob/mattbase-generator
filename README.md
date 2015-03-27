@@ -22,5 +22,6 @@ A WordPress generator for [Yeoman](http://yeoman.io).
 - To remove the generator run: `npm uninstall -g generator-mattbase`
 
 ### Changelog
+- v1.0.2 - Fixed password not being passed to local-config.php; Updates theme dir for Mattbase and GitHub
 - v1.0.1 - Updated and added Changelog to readme
 - v1.0.0 - Rewrote generator completely; now includes the Mattbase WP Framework by default
