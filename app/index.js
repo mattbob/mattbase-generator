@@ -398,6 +398,7 @@ mattbase.prototype.finalSetupChanges = function() {
 
 		this.copy('themes/mattbase/footer.php', 'wp-content/themes/' + this.themeDir + '/footer.php');
 		this.copy('themes/mattbase/header.php', 'wp-content/themes/' + this.themeDir + '/header.php');
+		this.copy('themes/mattbase/index.php', 'wp-content/themes/' + this.themeDir + '/index.php');
 	}
 
 	done();
