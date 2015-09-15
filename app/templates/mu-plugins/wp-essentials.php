@@ -4,10 +4,11 @@ Plugin Name: WordPress Essentials
 Description: Cleans up the WordPress admin area and provides basic security and spam protection.
 Author: Mattbob
 Author URI: http://greenishorange.com
-Version: 1.0
+Version: 1.1
 */
 
 add_action('after_setup_theme', 'wp_essentials_setup');
+
 function wp_essentials_setup() {
 	// REMOVE UNNECESSARY META TAGS
 	remove_action('wp_head', 'wp_generator');
@@ -138,6 +139,16 @@ function wp_essentials_setup() {
 	}
 	add_filter('login_headertitle', 'custom_login_title');
 }
+
+// REMOVE DEFAULT IMAGE LINK
+function essentials_image_link_default() {
+	$image_set = get_option('image_default_link_type');
+
+	if($image_set !== 'none') {
+		update_option('image_default_link_type', 'none');
+	}
+}
+add_action('admin_init', 'essentials_image_link_default', 10);
 
 // SIMPLE ADMIN PROTECTION
 if (is_admin()) {

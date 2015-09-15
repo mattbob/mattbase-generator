@@ -413,11 +413,11 @@ mattbase.prototype.finalSetupChanges = function() {
 		this.directory( 'themes/mattbase/assets', 'wp-content/themes/' + this.themeDir + '/assets' );
 
 		this.template( 'themes/mattbase/functions.php', 'wp-content/themes/' + this.themeDir + '/functions.php' );
+		this.template( 'themes/mattbase/header.php', 'wp-content/themes/' + this.themeDir + '/header.php' );
 		this.template( 'themes/mattbase/style.css', 'wp-content/themes/' + this.themeDir + '/style.css' );
 		this.template( 'themes/mattbase/inc/scripts.php', 'wp-content/themes/' + this.themeDir + '/inc/scripts.php' );
 
 		this.copy( 'themes/mattbase/footer.php', 'wp-content/themes/' + this.themeDir + '/footer.php' );
-		this.copy( 'themes/mattbase/header.php', 'wp-content/themes/' + this.themeDir + '/header.php' );
 		this.copy( 'themes/mattbase/index.php', 'wp-content/themes/' + this.themeDir + '/index.php' );
 	}
 
@@ -455,6 +455,5 @@ mattbase.prototype.gitSetup = function() {
 		done();
 	}
 };
-
 
 module.exports = mattbase;
