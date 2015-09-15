@@ -1,6 +1,6 @@
 {
 	"name": "generator-mattbase",
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"description": "A WordPress generator for Yeoman by Mattbob",
 	"keywords": [
 		"yeoman-generator",
@@ -15,7 +15,7 @@
 	"author": {
 		"name": "Mattbob",
 		"email": "matt@greenishorange.com",
-		"url": "https://github.com/mattbob"
+		"url": "https://greenishorange.com"
 	},
 	"main": "app/index.js",
 	"repository": {
