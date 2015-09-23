@@ -21,7 +21,7 @@ add_action( 'after_setup_theme', '<%= themeDir %>_setup' );
 function <%= themeDir %>_page_title( $id ) {
 	$title = get_the_title( $id ) . ' | ' . get_bloginfo( 'name' );
 
-	if( is_front_page() )
+	if( is_front_page() ) {
 		$title = get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' );
 	}
 
