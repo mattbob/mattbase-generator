@@ -2,6 +2,7 @@
 
 require_once locate_template( 'inc/scripts.php' );
 
+
 function <%= themeDir %>_setup() {
 	// REMOVE ADMIN BAR
 	show_admin_bar( false );
@@ -13,17 +14,14 @@ function <%= themeDir %>_setup() {
 
 	// INCLUDE STYLES FOR THE WYSISYG EDITOR
 	add_editor_style( 'assets/css/editor-style.css' );
+
+	// LET WORDPRESS MANAGE THE TITLE TAG
+	add_theme_support( 'title-tag' );
 }
 add_action( 'after_setup_theme', '<%= themeDir %>_setup' );
 
 
-// CUSTOM TITLE TAG (REMOVE IF USING AN SEO PLUGIN)
-function <%= themeDir %>_page_title( $id ) {
-	$title = get_the_title( $id ) . ' | ' . get_bloginfo( 'name' );
-
-	if( is_front_page() ) {
-		$title = get_bloginfo( 'name' ) . ' | ' . get_bloginfo( 'description' );
-	}
-
-	return $title;
+// HELPER FUNCTION TO GET ASSETS
+function get_asset($type, $file) {
+	return get_template_directory_uri() . '/assets/' . $type . '/' . $file;
 }
